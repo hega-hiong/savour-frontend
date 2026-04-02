@@ -214,6 +214,21 @@
         .qr-container { display: flex; flex-wrap: wrap; gap: 20px; }
         .qr-item { border: 1px solid #ccc; padding: 10px; text-align: center; }
         img { max-width: 150px; }
+
+        .download-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #1e88e5;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.download-btn:hover {
+    background: #1565c0;
+}
     </style>
 </head>
 <body>
@@ -224,7 +239,7 @@
     <button onclick="generateQRs()">Générer</button>
     <div id="qrContainer" class="qr-container"></div>
 
-    <script>
+    <!--<script>
         function generateQRs() {
             const numTables = document.getElementById('numTables').value;
             const container = document.getElementById('qrContainer');
@@ -242,6 +257,36 @@
         }
         // Générer par défaut
         generateQRs();
-    </script>
+    </script>-->
+    <script>
+    function generateQRs() {
+        const numTables = document.getElementById('numTables').value;
+        const container = document.getElementById('qrContainer');
+        container.innerHTML = '';
+
+        for (let i = 1; i <= numTables; i++) {
+            const qrUrl = `https://savour-backend-1.onrender.com/api/qrcode/${i}`;
+
+            const div = document.createElement('div');
+            div.className = 'qr-item';
+
+            div.innerHTML = `
+                <h3>Table ${i}</h3>
+                <img src="${qrUrl}" alt="QR Code Table ${i}">
+                <p>Scannez pour commander</p>
+
+                <!-- Bouton de téléchargement -->
+                <a href="${qrUrl}" download="qr-table-${i}.png" class="download-btn">
+                    Télécharger le QR
+                </a>
+            `;
+
+            container.appendChild(div);
+        }
+    }
+
+    // Générer par défaut
+    generateQRs();
+</script>
 </body>
 </html>
