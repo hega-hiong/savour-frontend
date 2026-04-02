@@ -258,7 +258,7 @@
         // Générer par défaut
         generateQRs();
     </script>-->
-    <script>
+    <!--<script>
     function generateQRs() {
         const numTables = document.getElementById('numTables').value;
         const container = document.getElementById('qrContainer');
@@ -275,7 +275,7 @@
                 <img src="${qrUrl}" alt="QR Code Table ${i}">
                 <p>Scannez pour commander</p>
 
-                <!-- Bouton de téléchargement -->
+                -- Bouton de téléchargement --
                 <a href="${qrUrl}" download="qr-table-${i}.png" class="download-btn">
                     Télécharger le QR
                 </a>
@@ -286,6 +286,73 @@
     }
 
     // Générer par défaut
+    generateQRs();
+</script>-->
+
+
+
+<script>
+    async function generateQRs() {
+        const numTables = document.getElementById('numTables').value;
+        const container = document.getElementById('qrContainer');
+        container.innerHTML = '';
+
+        for (let i = 1; i <= numTables; i++) {
+            const qrUrl = `https://savour-backend-1.onrender.com/api/qrcode/${i}`;
+
+            // Charger le QR code
+            const qrImg = new Image();
+            qrImg.crossOrigin = "anonymous";
+            qrImg.src = qrUrl;
+
+            await new Promise(resolve => qrImg.onload = resolve);
+
+            // Canvas pour fusionner QR + texte
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            const size = 500;
+            canvas.width = size;
+            canvas.height = size;
+
+            // Dessiner le QR code
+            ctx.drawImage(qrImg, 0, 0, size, size);
+
+            // Ajouter un cercle blanc derrière SA
+            const circleSize = 140;
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, circleSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ajouter le texte SA
+            ctx.font = "bold 90px Arial";
+            ctx.fillStyle = "rgb(165, 52, 8)";  // TA COULEUR EXACTE
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("SA", size / 2, size / 2);
+
+            // Convertir en image finale
+            const finalQR = canvas.toDataURL("image/png");
+
+            // Création du bloc HTML
+            const div = document.createElement('div');
+            div.className = 'qr-item';
+
+            div.innerHTML = `
+                <h3>Table ${i}</h3>
+                <img src="${finalQR}" alt="QR Code Table ${i}">
+                <p>Scannez pour commander</p>
+
+                <a href="${finalQR}" download="qr-table-${i}.png" class="download-btn">
+                    Télécharger le QR
+                </a>
+            `;
+
+            container.appendChild(div);
+        }
+    }
+
     generateQRs();
 </script>
 </body>
