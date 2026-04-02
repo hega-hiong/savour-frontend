@@ -88,6 +88,30 @@ function ajouterAuPanier(plat) {
     updatePanierUI();
 }
 
+
+
+function retirerDuPanier(id) {
+    const item = panier.find(p => p.id === id);
+
+    if (!item) return; // rien à retirer
+
+    if (item.quantite > 1) {
+        item.quantite -= 1;
+    } else {
+        // si quantité = 1 → on supprime l'article
+        panier.splice(panier.indexOf(item), 1);
+    }
+
+    updatePanierUI();
+}
+
+
+
+
+
+
+
+
 async function envoyerCommande() {
     if (panier.length === 0) {
         alert('Panier vide. Ajoutez un plat avant de commander.');
@@ -139,9 +163,11 @@ function genererMenu() {
                 <h3>${plat.nom}</h3>
                 <div class="item-price">${plat.prix.toFixed(2)} €</div>
             </div>
+            <button class="btn-remove">-</button>
             <button class="btn-add">+</button>
         `;
         card.querySelector('.btn-add').addEventListener('click', () => ajouterAuPanier(plat));
+        card.querySelector('.btn-remove').addEventListener('click', () => retirerDuPanier(plat.id));
         menuContainer.appendChild(card);
     });
 }

@@ -49,7 +49,7 @@ function renderOrders() {
         <div class="order-meta">Total: ${order.subtotal ? order.subtotal.toFixed(2) + ' €' : '-'}</div>
         <div class="order-actions">
           <button class="btn-action" onclick="updateOrderStatus('${order.id}','En préparation')">En préparation</button>
-          <button class="btn-action" onclick="updateOrderStatus('${order.id}','Terminé')">Terminé</button>
+          <button class="btn-action" onclick="finishOrder('${order.id}')",'Terminé')">Terminé</button>
         </div>
       `;
       container.appendChild(card);
@@ -113,6 +113,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+async function finishOrder(orderId) {
+  try {
+    // 1. Mettre le statut à "Terminé"
+    await updateOrderStatus(orderId, "Terminé");
+
+    // 2. Supprimer la commande du backend
+    const resp = await fetch(`${API_URL}/api/orders/${orderId}`, {
+      method: 'DELETE'
+    });
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    // 3. Supprimer localement
+    orders = orders.filter(o => o.id !== orderId);
+
+    // 4. Rafraîchir l'affichage
+    renderOrders();
+
+  } catch (err) {
+    console.error("finishOrder", err);
+  }
+}
 
 
 /*const socket = io();
