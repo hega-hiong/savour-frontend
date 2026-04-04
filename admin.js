@@ -256,44 +256,44 @@ async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
     const categorie = document.getElementById('plat-category').value.trim();
-    const imageFile = document.getElementById('plat-image').files[0];
+    const image = document.getElementById('plat-image').value.trim();
     const accompagnements = document.getElementById('plat-acc').value.trim()
         ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
         : null;
 
-    if (!nom || !prix || !categorie || (!imageFile && !currentEditingId)) {
-        showNotification('Tous les champs sont requis (image obligatoire pour ajout)', 'error');
+    if (!nom || !prix || !categorie || !image) {
+        showNotification('Tous les champs sont requis', 'error');
         return;
     }
 
     try {
         setLoading(true);
-        const formData = new FormData();
-        formData.append('nom', nom);
-        formData.append('prix', prix);
-        formData.append('categorie', categorie);
-        if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
-        if (imageFile) formData.append('image', imageFile);
-        // Pour update sans nouvelle image, le backend garde l'ancienne
+        const formData = {
+            nom,
+            prix,
+            categorie,
+            image,
+            accompagnements
+        };
 
         let response;
         if (currentEditingId) {
             // Mise à jour
-            formData.append('id', currentEditingId);
             response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
                 method: 'PUT',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
         } else {
             // Ajout
             response = await fetch(`${API_URL}/api/menu`, {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
         }
 
         if (response.ok) {
-            const result = await response.json();
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
             loadMenu();
