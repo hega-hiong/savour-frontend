@@ -31,6 +31,20 @@ function initializeApp() {
     loadOrders();
     loadStats();
 }
+
+function normalizeId(item) {
+    return item.id || item._id;
+}
+
+function clearMenuForm() {
+    document.getElementById('plat-name').value = '';
+    document.getElementById('plat-price').value = '';
+    document.getElementById('plat-image').value = '';
+    document.getElementById('plat-acc').value = '';
+    currentEditingId = null;
+    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
+}
+
 /*// Interface Admin SaaS - Savour d'Afrique
 const socket = io(API_URL);
 let menuData = [];
@@ -184,14 +198,16 @@ async function loadMenu() {
 
 function renderMenuTable() {
     const tbody = document.getElementById('stock-list');
-    tbody.innerHTML = menuData.map(item => `
-        <tr class="menu-item-row" data-id="${item.id}">
+    tbody.innerHTML = menuData.map(item => {
+        const itemId = normalizeId(item);
+        return `
+        <tr class="menu-item-row" data-id="${itemId}">
             <td>
                 <div class="item-info">
                     <img src="${item.image}" alt="${item.nom}" class="item-thumb" onerror="this.style.display='none'">
                     <div>
                         <strong>${item.nom}</strong>
-                        <small>ID: ${item.id}</small>
+                        <small>ID: ${itemId}</small>
                     </div>
                 </div>
             </td>
@@ -204,20 +220,20 @@ function renderMenuTable() {
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="editMenuItem(${item.id})" title="Modifier">
+                    <button class="btn-edit" onclick="editMenuItem('${itemId}')" title="Modifier">
                         ✏️
                     </button>
-                    <button class="btn-delete" onclick="deleteMenuItem(${item.id})" title="Supprimer">
+                    <button class="btn-delete" onclick="deleteMenuItem('${itemId}')" title="Supprimer">
                         🗑️
                     </button>
                     <label class="switch">
-                        <input type="checkbox" ${item.dispo !== false ? 'checked' : ''} onchange="toggleAvailability(${item.id})">
+                        <input type="checkbox" ${item.dispo !== false ? 'checked' : ''} onchange="toggleAvailability('${itemId}')">
                         <span class="slider"></span>
                     </label>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 
@@ -291,7 +307,7 @@ async function handleMenuSubmit() {
 // EDIT MENU ITEM
 // -----------------------------
 function editMenuItem(id) {
-    const item = menuData.find(i => i.id === id);
+    const item = menuData.find(i => normalizeId(i) === id);
     if (!item) return;
 
     currentEditingId = id;
@@ -335,7 +351,7 @@ async function deleteMenuItem(id) {
 // TOGGLE DISPONIBILITÉ
 // -----------------------------
 async function toggleAvailability(id) {
-    const item = menuData.find(i => i.id === id);
+    const item = menuData.find(i => normalizeId(i) === id);
     if (!item) return;
 
     try {
