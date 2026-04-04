@@ -786,3 +786,59 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ...existing code...
+
+function normalizeId(item) {
+    return item.id || item._id;
+}
+
+function clearMenuForm() {
+    document.getElementById('plat-name').value = '';
+    document.getElementById('plat-price').value = '';
+    document.getElementById('plat-category').value = '';
+    document.getElementById('plat-image').value = '';
+    document.getElementById('plat-acc').value = '';
+    currentEditingId = null;
+    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
+}
+
+// ...existing code...
+
+function editMenuItem(id) {
+    const item = menuData.find(i => normalizeId(i) === id);
+    // ...
+}
+
+async function deleteMenuItem(id) {
+    // ...
+    const itemId = id; // ou normalizeId si tu appelles avec item
+    const response = await fetch(`${API_URL}/api/menu/${itemId}`, { method: 'DELETE' });
+    // ...
+}
+
+function renderMenuTable() {
+    tbody.innerHTML = menuData.map(item => {
+        const itemId = normalizeId(item);
+        return `
+            ... onclick="editMenuItem('${itemId}')" ...
+            ... href / delete ... 
+        `;
+    }).join('');
+}
