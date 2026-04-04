@@ -294,10 +294,12 @@ async function handleMenuSubmit() {
         }
 
         if (response.ok) {
+            console.log('Success:', await response.json());
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
             loadMenu();
         } else {
+            console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');
         }
     } catch (error) {
