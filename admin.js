@@ -89,6 +89,9 @@ function initializeApp() {
 }*/
 
 function setupEventListeners() {
+    // Ajouter les styles dynamiques
+    addDynamicStyles();
+
     // Bouton connexion admin
     document.getElementById('btn-login').addEventListener('click', () => {
         const password = document.getElementById('login-password').value.trim().toLowerCase();
@@ -592,6 +595,7 @@ async function deleteOrder(orderId) {
         setLoading(false);
     }
 }
+*/
 
 function editMenuItem(id) {
     const item = menuData.find(i => i.id === id);
@@ -837,16 +841,70 @@ function createLoader() {
     return loader;
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
+function addDynamicStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease-out;
+    }
 
-    document.body.appendChild(notification);
+    .notification-success {
+        background: #10b981;
+    }
 
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    .notification-error {
+        background: #ef4444;
+    }
+
+    .notification-info {
+        background: #3b82f6;
+    }
+
+    .notification-warning {
+        background: #f59e0b;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .connection-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .connection-status.connected {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .connection-status.disconnected {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+`;
+    document.head.appendChild(style);
 }
 
 // Styles CSS dynamiques pour les notifications
@@ -886,21 +944,5 @@ style.textContent = `
         color: #991b1b;
     }
 `;
-document.head.appendChild(style);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    document.head.appendChild(style);
+}
