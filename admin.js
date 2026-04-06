@@ -89,6 +89,30 @@ function initializeApp() {
 }*/
 
 function setupEventListeners() {
+    // Bouton connexion admin
+    document.getElementById('btn-login').addEventListener('click', () => {
+        const password = document.getElementById('login-password').value.trim().toLowerCase();
+        const correctPassword = 'matersavoure'; // Change ce mot de passe !
+        
+        if (!password) {
+            showNotification('Veuillez entrer un mot de passe', 'error');
+            return;
+        }
+        
+        if (password !== correctPassword) {
+            showNotification('Mot de passe incorrect', 'error');
+            console.log('Mot de passe incorrect. Entré:', password, 'Attendu:', correctPassword);
+            document.getElementById('login-password').value = '';
+            return;
+        }
+        
+        // Connexion réussie
+        console.log('Connexion réussie - Masquage overlay');
+        document.getElementById('login-overlay').style.display = 'none';
+        console.log('Appel de loadDashboard');
+        loadDashboard();
+    });
+
     // Navigation
     document.querySelectorAll('.sidebar nav button').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -185,8 +209,9 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-    console.log('loadDashboard appelé - Affichage section stocks');
+    console.log('loadDashboard appelé - Affichage section stocks et chargement menu');
     showSection('stocks');
+    loadMenu(); // Charger les données du menu
 }
 
 // GESTION DU MENU
