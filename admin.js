@@ -318,6 +318,12 @@ async function handleMenuSubmit() {
             loadMenu();
             // Émettre un événement pour forcer la mise à jour des clients
             socket.emit('force-menu-update');
+            // Fallback : recharger aussi après un délai
+            setTimeout(() => {
+                console.log('Rechargement de secours du menu');
+                loadMenu();
+                socket.emit('force-menu-update');
+            }, 2000);
         } else {
             console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');

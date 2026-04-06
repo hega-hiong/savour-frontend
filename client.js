@@ -242,8 +242,19 @@ socket.on('menu-updated', (updatedMenu) => {
 // Forcer la mise à jour du menu depuis l'admin
 socket.on('force-menu-update', () => {
     console.log('Mise à jour forcée du menu demandée par l\'admin');
-    loadMenuFromAPI();
+    loadMenuFromAPI().then(() => {
+        genererMenu();
+        showNotification('Menu mis à jour !', 'info');
+    });
 });
+
+// Rechargement périodique du menu toutes les 30 secondes pour s'assurer de la synchronisation
+setInterval(() => {
+    console.log('Rechargement périodique du menu');
+    loadMenuFromAPI().then(() => {
+        genererMenu();
+    });
+}, 30000);
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
