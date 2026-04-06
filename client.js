@@ -70,7 +70,12 @@ function updatePanierUI() {
 
     const details = panier.map(item => `${item.quantite}x ${item.nom}`).join('\n');
     const modalDetails = document.getElementById('modal-details');
-    if (modalDetails) modalDetails.innerText = `Table ${tableNum} • Total: ${total.toFixed(2)} €\n${details}`;
+    if (modalDetails) {
+        modalDetails.innerText = `Table ${tableNum} • Total: ${total.toFixed(2)} €\n${details}`;
+        console.log('Modale mise à jour avec:', modalDetails.innerText);
+    } else {
+        console.error('modal-details element not found');
+    }
 }
 
 function ajouterAuPanier(plat) {
@@ -193,14 +198,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupFiltres();
 
     document.getElementById('btn-checkout').addEventListener('click', () => {
+        console.log('Bouton Commander cliqué, panier:', panier);
         if (panier.length === 0) {
             alert('Panier vide. Ajoutez un plat avant de commander.');
             return;
         }
+        console.log('Affichage de la modale de confirmation');
         document.getElementById('modal-overlay').style.display = 'flex';
     });
-    document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('modal-overlay').style.display = 'none');
-    document.getElementById('btn-confirm').addEventListener('click', envoyerCommande);
+    document.getElementById('btn-cancel').addEventListener('click', () => {
+        console.log('Bouton Annuler cliqué');
+        document.getElementById('modal-overlay').style.display = 'none';
+    });
+    document.getElementById('btn-confirm').addEventListener('click', () => {
+        console.log('Bouton Envoyer en cuisine cliqué');
+        envoyerCommande();
+    });
 });
 
 function ajouterAuPanier(plat) {
