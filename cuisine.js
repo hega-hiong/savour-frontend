@@ -1,5 +1,5 @@
 // URL de ton backend Render
-const API_URL = "https://savour-backend-uhk1.onrender.com";
+const API_URL = "https://savour-backend-1.onrender.com";
 
 // Connexion Socket.io vers Render
 const socket = io(API_URL);
@@ -49,7 +49,7 @@ function renderOrders() {
         <div class="order-meta">Total: ${order.subtotal ? order.subtotal.toFixed(2) + ' €' : '-'}</div>
         <div class="order-actions">
           <button class="btn-action" onclick="updateOrderStatus('${order.id}','En préparation')">En préparation</button>
-          <button class="btn-action" onclick="finishOrder('${order.id}')",'Terminé')">Terminé</button>
+          <button class="btn-action" onclick="finishOrder('${order.id}')">Terminé</button>
         </div>
       `;
       container.appendChild(card);
