@@ -217,22 +217,28 @@ function renderMenuTable() {
         console.error('Element stock-list non trouvé!');
         return;
     }
-    tbody.innerHTML = menuData.map(item => {
+    
+    // Filtrer les éléments valides (ceux qui ont au moins un nom)
+    const validMenuData = menuData.filter(item => item && item.nom);
+    console.log('Éléments valides après filtrage:', validMenuData.length);
+    
+    tbody.innerHTML = validMenuData.map(item => {
         const itemId = normalizeId(item);
+        const prix = (typeof item.prix === 'number' && !isNaN(item.prix)) ? item.prix.toFixed(2) : '0.00';
         return `
         <tr class="menu-item-row" data-id="${itemId}">
             <td>
                 <div class="item-info">
-                    <img src="${item.image}" alt="${item.nom}" class="item-thumb" onerror="this.style.display='none'">
+                    <img src="${item.image || ''}" alt="${item.nom || 'Sans nom'}" class="item-thumb" onerror="this.style.display='none'">
                     <div>
-                        <strong>${item.nom}</strong>
+                        <strong>${item.nom || 'Sans nom'}</strong>
                         <small>ID: ${itemId}</small>
                     </div>
                 </div>
             </td>
-            <td>${item.prix.toFixed(2)} €</td>
+            <td>${prix} €</td>
             <td>
-                <span class="category-badge category-${item.categorie.toLowerCase()}">${item.categorie}</span>
+                <span class="category-badge category-${(item.categorie || 'autre').toLowerCase()}">${item.categorie || 'Autre'}</span>
             </td>
             <td>
                 ${item.accompagnements ? item.accompagnements.join(', ') : 'Aucun'}
