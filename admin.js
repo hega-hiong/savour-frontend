@@ -235,13 +235,15 @@ async function loadMenu() {
 function renderMenuTable() {
     console.log('renderMenuTable appelé avec', menuData.length, 'éléments');
     console.log('Données du menu:', menuData);
-    
+
     const tbody = document.getElementById('stock-list');
+    console.log('Element stock-list trouvé:', !!tbody);
+
     if (!tbody) {
         console.error('Element stock-list non trouvé!');
         return;
     }
-    
+
     // Afficher tous les éléments, même incomplets, avec des valeurs par défaut
     tbody.innerHTML = menuData.map(item => {
         const itemId = normalizeId(item);
@@ -284,6 +286,8 @@ function renderMenuTable() {
             </td>
         </tr>
     `}).join('');
+
+    console.log('HTML généré pour le tableau:', tbody.innerHTML);
 }
 
 

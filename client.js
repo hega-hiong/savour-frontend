@@ -166,8 +166,23 @@ function genererMenu() {
             <button class="btn-remove">-</button>
             <button class="btn-add">+</button>
         `;
-        card.querySelector('.btn-add').addEventListener('click', () => ajouterAuPanier(plat));
-        card.querySelector('.btn-remove').addEventListener('click', () => retirerDuPanier(plat.id));
+        const btnAdd = card.querySelector('.btn-add');
+        const btnRemove = card.querySelector('.btn-remove');
+
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+                console.log('Bouton + cliqué pour:', plat.nom);
+                ajouterAuPanier(plat);
+            });
+        }
+
+        if (btnRemove) {
+            btnRemove.addEventListener('click', () => {
+                console.log('Bouton - cliqué pour:', plat.nom);
+                retirerDuPanier(plat.id);
+            });
+        }
+
         menuContainer.appendChild(card);
     });
 }
@@ -204,11 +219,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         console.log('Affichage de la modale de confirmation');
-        document.getElementById('modal-overlay').style.display = 'flex';
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalDetails = document.getElementById('modal-details');
+        console.log('modal-overlay trouvé:', !!modalOverlay);
+        console.log('modal-details trouvé:', !!modalDetails);
+
+        if (modalOverlay) {
+            modalOverlay.style.display = 'flex';
+            console.log('Modale affichée');
+        } else {
+            console.error('modal-overlay non trouvé!');
+        }
     });
     document.getElementById('btn-cancel').addEventListener('click', () => {
         console.log('Bouton Annuler cliqué');
-        document.getElementById('modal-overlay').style.display = 'none';
+        const modalOverlay = document.getElementById('modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.style.display = 'none';
+        }
     });
     document.getElementById('btn-confirm').addEventListener('click', () => {
         console.log('Bouton Envoyer en cuisine cliqué');
