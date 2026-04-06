@@ -217,7 +217,8 @@ function renderMenuTable() {
     
     // Filtrer les éléments valides (ceux qui ont au moins un nom)
     const validMenuData = menuData.filter(item => item && item.nom);
-    console.log('Éléments valides après filtrage:', validMenuData.length);
+    console.log('Éléments valides après filtrage:', validMenuData);
+    console.log('Données brutes du menu:', menuData);
     
     tbody.innerHTML = validMenuData.map(item => {
         const itemId = normalizeId(item);
@@ -328,20 +329,34 @@ async function handleMenuSubmit() {
         }
 
         if (response.ok) {
+            const result = await response.json();
+            console.log('Plat ajouté avec succès:', result);
+            
+            // Vérifier que l'item a toutes les propriétés requises
+            if (!result.nom || !result.prix || !result.categorie) {
+                console.error('Item sauvegardé incomplet:', result);
+                showNotification('Erreur: données incomplètes sauvegardées', 'error');
+                return;
+            }
+            
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
             // Forcer le rechargement du menu
             console.log('Rechargement forcé du menu après ajout');
-            loadMenu();
+            await loadMenu();
             // Émettre un événement pour forcer la mise à jour des clients
             socket.emit('force-menu-update');
             // Fallback : recharger aussi après un délai
-            setTimeout(() => {
+            setTimeout(async () => {
                 console.log('Rechargement de secours du menu');
-                loadMenu();
+                await loadMenu();
                 socket.emit('force-menu-update');
             }, 2000);
         } else {
+            const errorText = await response.text();
+            console.error('Erreur serveur:', response.status, errorText);
+            showNotification(`Erreur lors de la sauvegarde: ${errorText}`, 'error');
+        }
             console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');
         }
