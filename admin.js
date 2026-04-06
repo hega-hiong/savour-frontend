@@ -31,6 +31,20 @@ function initializeApp() {
     loadOrders();
     loadStats();
 }
+
+function normalizeId(item) {
+    return item.id || item._id;
+}
+
+function clearMenuForm() {
+    document.getElementById('plat-name').value = '';
+    document.getElementById('plat-price').value = '';
+    document.getElementById('plat-image').value = '';
+    document.getElementById('plat-acc').value = '';
+    currentEditingId = null;
+    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
+}
+
 /*// Interface Admin SaaS - Savour d'Afrique
 const socket = io(API_URL);
 let menuData = [];
@@ -184,14 +198,16 @@ async function loadMenu() {
 
 function renderMenuTable() {
     const tbody = document.getElementById('stock-list');
-    tbody.innerHTML = menuData.map(item => `
-        <tr class="menu-item-row" data-id="${item.id}">
+    tbody.innerHTML = menuData.map(item => {
+        const itemId = normalizeId(item);
+        return `
+        <tr class="menu-item-row" data-id="${itemId}">
             <td>
                 <div class="item-info">
                     <img src="${item.image}" alt="${item.nom}" class="item-thumb" onerror="this.style.display='none'">
                     <div>
                         <strong>${item.nom}</strong>
-                        <small>ID: ${item.id}</small>
+                        <small>ID: ${itemId}</small>
                     </div>
                 </div>
             </td>
@@ -204,20 +220,20 @@ function renderMenuTable() {
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="editMenuItem(${item.id})" title="Modifier">
+                    <button class="btn-edit" onclick="editMenuItem('${itemId}')" title="Modifier">
                         ✏️
                     </button>
-                    <button class="btn-delete" onclick="deleteMenuItem(${item.id})" title="Supprimer">
+                    <button class="btn-delete" onclick="deleteMenuItem('${itemId}')" title="Supprimer">
                         🗑️
                     </button>
                     <label class="switch">
-                        <input type="checkbox" ${item.dispo !== false ? 'checked' : ''} onchange="toggleAvailability(${item.id})">
+                        <input type="checkbox" ${item.dispo !== false ? 'checked' : ''} onchange="toggleAvailability('${itemId}')">
                         <span class="slider"></span>
                     </label>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 
@@ -237,46 +253,52 @@ function renderMenuTable() {
 // FORMULAIRE MENU (AJOUT / UPDATE)
 // -----------------------------
 async function handleMenuSubmit() {
-    const formData = {
-        nom: document.getElementById('plat-name').value.trim(),
-        prix: parseFloat(document.getElementById('plat-price').value),
-        categorie: document.getElementById('plat-category').value.trim(),
-        image: document.getElementById('plat-image').value.trim(),
-        accompagnements: document.getElementById('plat-acc').value.trim()
-            ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
-            : null
-    };
+    const nom = document.getElementById('plat-name').value.trim();
+    const prix = parseFloat(document.getElementById('plat-price').value);
+    const categorie = document.getElementById('plat-category').value.trim();
+    const imageFile = document.getElementById('plat-image').files[0];
+    const accompagnements = document.getElementById('plat-acc').value.trim()
+        ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
+        : null;
 
-    if (!formData.nom || !formData.prix || !formData.categorie || !formData.image) {
-        showNotification('Tous les champs sont requis', 'error');
+    if (!nom || !prix || !categorie || (!imageFile && !currentEditingId)) {
+        showNotification('Tous les champs sont requis (image obligatoire pour ajout)', 'error');
         return;
     }
 
     try {
         setLoading(true);
-        let response;
+        const formData = new FormData();
+        formData.append('nom', nom);
+        formData.append('prix', prix);
+        formData.append('categorie', categorie);
+        if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
+        if (imageFile) formData.append('image', imageFile);
+        // Pour update sans nouvelle image, le backend garde l'ancienne
 
+        let response;
         if (currentEditingId) {
             // Mise à jour
+            formData.append('id', currentEditingId);
             response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formData
             });
         } else {
             // Ajout
             response = await fetch(`${API_URL}/api/menu`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formData
             });
         }
 
         if (response.ok) {
+            console.log('Success:', await response.json());
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
             loadMenu();
         } else {
+            console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');
         }
     } catch (error) {
@@ -291,7 +313,7 @@ async function handleMenuSubmit() {
 // EDIT MENU ITEM
 // -----------------------------
 function editMenuItem(id) {
-    const item = menuData.find(i => i.id === id);
+    const item = menuData.find(i => normalizeId(i) === id);
     if (!item) return;
 
     currentEditingId = id;
@@ -335,7 +357,7 @@ async function deleteMenuItem(id) {
 // TOGGLE DISPONIBILITÉ
 // -----------------------------
 async function toggleAvailability(id) {
-    const item = menuData.find(i => i.id === id);
+    const item = menuData.find(i => normalizeId(i) === id);
     if (!item) return;
 
     try {
@@ -786,59 +808,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ...existing code...
-
-function normalizeId(item) {
-    return item.id || item._id;
-}
-
-function clearMenuForm() {
-    document.getElementById('plat-name').value = '';
-    document.getElementById('plat-price').value = '';
-    document.getElementById('plat-category').value = '';
-    document.getElementById('plat-image').value = '';
-    document.getElementById('plat-acc').value = '';
-    currentEditingId = null;
-    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
-}
-
-// ...existing code...
-
-function editMenuItem(id) {
-    const item = menuData.find(i => normalizeId(i) === id);
-    // ...
-}
-
-async function deleteMenuItem(id) {
-    // ...
-    const itemId = id; // ou normalizeId si tu appelles avec item
-    const response = await fetch(`${API_URL}/api/menu/${itemId}`, { method: 'DELETE' });
-    // ...
-}
-
-function renderMenuTable() {
-    tbody.innerHTML = menuData.map(item => {
-        const itemId = normalizeId(item);
-        return `
-            ... onclick="editMenuItem('${itemId}')" ...
-            ... href / delete ... 
-        `;
-    }).join('');
-}
