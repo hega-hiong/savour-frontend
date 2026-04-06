@@ -196,19 +196,6 @@ async function loadMenu() {
         setLoading(false);
     }
 }
-/*async function loadMenu() {
-    try {
-        setLoading(true);
-        const response = await fetch('/api/menu');
-        menuData = await response.json();
-        renderMenuTable();
-    } catch (error) {
-        console.error('Erreur chargement menu:', error);
-        showNotification('Erreur de chargement du menu', 'error');
-    } finally {
-        setLoading(false);
-    }
-}*/
 
 function renderMenuTable() {
     const tbody = document.getElementById('stock-list');
@@ -275,8 +262,8 @@ async function handleMenuSubmit() {
         ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
         : null;
 
-    if (!nom || !prix || !categorie || (!imageFile && !currentEditingId)) {
-        showNotification('Tous les champs sont requis (image obligatoire pour ajout)', 'error');
+    if (!nom || !prix || !categorie || !imageFile) {
+        showNotification('Tous les champs sont requis', 'error');
         return;
     }
 
@@ -287,19 +274,15 @@ async function handleMenuSubmit() {
         formData.append('prix', prix);
         formData.append('categorie', categorie);
         if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
-        if (imageFile) formData.append('image', imageFile);
-        // Pour update sans nouvelle image, le backend garde l'ancienne
+        formData.append('image', imageFile);
 
         let response;
         if (currentEditingId) {
-            // Mise à jour
-            formData.append('id', currentEditingId);
             response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
                 method: 'PUT',
                 body: formData
             });
         } else {
-            // Ajout
             response = await fetch(`${API_URL}/api/menu`, {
                 method: 'POST',
                 body: formData
@@ -307,7 +290,6 @@ async function handleMenuSubmit() {
         }
 
         if (response.ok) {
-            console.log('Success:', await response.json());
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
             loadMenu();
