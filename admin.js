@@ -20,42 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-    // Vérifier la connexion admin avec mot de passe
+    // Simuler connexion admin
     document.getElementById('btn-login').addEventListener('click', () => {
-        const password = document.getElementById('login-password').value.trim().toLowerCase();
-        const correctPassword = 'matersavoure'; // Change ce mot de passe !
-        
-        if (!password) {
-            showNotification('Veuillez entrer un mot de passe', 'error');
-            return;
-        }
-        
-        if (password !== correctPassword) {
-            showNotification('Mot de passe incorrect', 'error');
-            console.log('Mot de passe incorrect. Entré:', password, 'Attendu:', correctPassword);
-            document.getElementById('login-password').value = '';
-            return;
-        }
-        
-        // Connexion réussie
-        console.log('Connexion réussie - Masquage overlay');
         document.getElementById('login-overlay').style.display = 'none';
-        console.log('Appel de loadDashboard');
         loadDashboard();
     });
 
-    // NE PAS charger les données ici, attendre la connexion
-    console.log('App initialisée, en attente du mot de passe...');
+    // Charger les données initiales
+    loadMenu();
+    loadOrders();
+    loadStats();
 }
 
 function normalizeId(item) {
     return item.id || item._id;
 }
 
-function syncMenuWithClients() {
-    console.log('Synchronisation forcée du menu avec les clients');
-    socket.emit('force-menu-update');
-    showNotification('Synchronisation demandée aux clients', 'info');
+function clearMenuForm() {
+    document.getElementById('plat-name').value = '';
+    document.getElementById('plat-price').value = '';
+    document.getElementById('plat-image').value = '';
+    document.getElementById('plat-acc').value = '';
+    currentEditingId = null;
+    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
 }
 
 /*// Interface Admin SaaS - Savour d'Afrique
@@ -108,22 +95,17 @@ function setupEventListeners() {
 
 function setupSocketListeners() {
     socket.on('connect', () => {
-        console.log('Admin connecté au serveur Socket.io');
+        console.log('Admin connecté au serveur');
         updateConnectionStatus(true);
     });
 
     socket.on('disconnect', () => {
-        console.log('Admin déconnecté du serveur Socket.io');
-        updateConnectionStatus(false);
-    });
-
-    socket.on('connect_error', (error) => {
-        console.error('Erreur de connexion Socket.io:', error);
+        console.log('Admin déconnecté');
         updateConnectionStatus(false);
     });
 
     socket.on('menu-updated', (data) => {
-        console.log('Menu mis à jour via Socket.io:', data);
+        console.log('Menu mis à jour:', data);
         menuData = data;
         renderMenuTable();
         // Notifier le client du changement
@@ -157,7 +139,6 @@ function createConnectionStatus() {
 }
 
 function showSection(sectionId) {
-    console.log('showSection appelé avec sectionId:', sectionId);
     currentSection = sectionId;
     document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -171,7 +152,6 @@ function showSection(sectionId) {
     // Charger les données de la section
     switch(sectionId) {
         case 'stocks':
-            console.log('Chargement de la section stocks - appel loadMenu');
             loadMenu();
             break;
         case 'ventes':
@@ -185,19 +165,15 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-    console.log('loadDashboard appelé - Affichage section stocks');
     showSection('stocks');
 }
 
 // GESTION DU MENU
 async function loadMenu() {
-    console.log('loadMenu appelé - Chargement du menu depuis API');
     try {
         setLoading(true);
         const response = await fetch(`${API_URL}/api/menu`);
-        console.log('Réponse API reçue:', response.status);
         menuData = await response.json();
-        console.log('Données menu chargées:', menuData.length, 'éléments');
         renderMenuTable();
     } catch (error) {
         console.error('Erreur chargement menu:', error);
@@ -206,37 +182,38 @@ async function loadMenu() {
         setLoading(false);
     }
 }
+/*async function loadMenu() {
+    try {
+        setLoading(true);
+        const response = await fetch('/api/menu');
+        menuData = await response.json();
+        renderMenuTable();
+    } catch (error) {
+        console.error('Erreur chargement menu:', error);
+        showNotification('Erreur de chargement du menu', 'error');
+    } finally {
+        setLoading(false);
+    }
+}*/
 
 function renderMenuTable() {
-    console.log('renderMenuTable appelé avec', menuData.length, 'éléments');
     const tbody = document.getElementById('stock-list');
-    if (!tbody) {
-        console.error('Element stock-list non trouvé!');
-        return;
-    }
-    
-    // Filtrer les éléments valides (ceux qui ont au moins un nom)
-    const validMenuData = menuData.filter(item => item && item.nom);
-    console.log('Éléments valides après filtrage:', validMenuData);
-    console.log('Données brutes du menu:', menuData);
-    
-    tbody.innerHTML = validMenuData.map(item => {
+    tbody.innerHTML = menuData.map(item => {
         const itemId = normalizeId(item);
-        const prix = (typeof item.prix === 'number' && !isNaN(item.prix)) ? item.prix.toFixed(2) : '0.00';
         return `
         <tr class="menu-item-row" data-id="${itemId}">
             <td>
                 <div class="item-info">
-                    <img src="${item.image || ''}" alt="${item.nom || 'Sans nom'}" class="item-thumb" onerror="this.style.display='none'">
+                    <img src="${item.image}" alt="${item.nom}" class="item-thumb" onerror="this.style.display='none'">
                     <div>
-                        <strong>${item.nom || 'Sans nom'}</strong>
+                        <strong>${item.nom}</strong>
                         <small>ID: ${itemId}</small>
                     </div>
                 </div>
             </td>
-            <td>${prix} €</td>
+            <td>${item.prix.toFixed(2)} €</td>
             <td>
-                <span class="category-badge category-${(item.categorie || 'autre').toLowerCase()}">${item.categorie || 'Autre'}</span>
+                <span class="category-badge category-${item.categorie.toLowerCase()}">${item.categorie}</span>
             </td>
             <td>
                 ${item.accompagnements ? item.accompagnements.join(', ') : 'Aucun'}
@@ -275,23 +252,6 @@ function renderMenuTable() {
 // -----------------------------
 // FORMULAIRE MENU (AJOUT / UPDATE)
 // -----------------------------
-function clearMenuForm() {
-    const nameField = document.getElementById('plat-name');
-    const priceField = document.getElementById('plat-price');
-    const categoryField = document.getElementById('plat-category');
-    const imageField = document.getElementById('plat-image');
-    const accField = document.getElementById('plat-acc');
-    const buttonField = document.getElementById('add-menu-item');
-
-    if (nameField) nameField.value = '';
-    if (priceField) priceField.value = '';
-    if (categoryField) categoryField.selectedIndex = 0;
-    if (imageField) imageField.value = '';
-    if (accField) accField.value = '';
-    currentEditingId = null;
-    if (buttonField) buttonField.textContent = 'Ajouter / Mettre à jour';
-}
-
 async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
@@ -301,8 +261,8 @@ async function handleMenuSubmit() {
         ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
         : null;
 
-    if (!nom || !prix || !categorie || !imageFile) {
-        showNotification('Tous les champs sont requis', 'error');
+    if (!nom || !prix || !categorie || (!imageFile && !currentEditingId)) {
+        showNotification('Tous les champs sont requis (image obligatoire pour ajout)', 'error');
         return;
     }
 
@@ -313,15 +273,19 @@ async function handleMenuSubmit() {
         formData.append('prix', prix);
         formData.append('categorie', categorie);
         if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
-        formData.append('image', imageFile);
+        if (imageFile) formData.append('image', imageFile);
+        // Pour update sans nouvelle image, le backend garde l'ancienne
 
         let response;
         if (currentEditingId) {
+            // Mise à jour
+            formData.append('id', currentEditingId);
             response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
                 method: 'PUT',
                 body: formData
             });
         } else {
+            // Ajout
             response = await fetch(`${API_URL}/api/menu`, {
                 method: 'POST',
                 body: formData
@@ -329,34 +293,11 @@ async function handleMenuSubmit() {
         }
 
         if (response.ok) {
-            const result = await response.json();
-            console.log('Plat ajouté avec succès:', result);
-            
-            // Vérifier que l'item a toutes les propriétés requises
-            if (!result.nom || !result.prix || !result.categorie) {
-                console.error('Item sauvegardé incomplet:', result);
-                showNotification('Erreur: données incomplètes sauvegardées', 'error');
-                return;
-            }
-            
+            console.log('Success:', await response.json());
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
-            // Forcer le rechargement du menu
-            console.log('Rechargement forcé du menu après ajout');
-            await loadMenu();
-            // Émettre un événement pour forcer la mise à jour des clients
-            socket.emit('force-menu-update');
-            // Fallback : recharger aussi après un délai
-            setTimeout(async () => {
-                console.log('Rechargement de secours du menu');
-                await loadMenu();
-                socket.emit('force-menu-update');
-            }, 2000);
+            loadMenu();
         } else {
-            const errorText = await response.text();
-            console.error('Erreur serveur:', response.status, errorText);
-            showNotification(`Erreur lors de la sauvegarde: ${errorText}`, 'error');
-        }
             console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');
         }
@@ -604,6 +545,16 @@ async function toggleAvailability(id) {
         console.error('Erreur toggle disponibilité:', error);
         showNotification('Erreur lors de la mise à jour', 'error');
     }
+}
+
+function clearMenuForm() {
+    document.getElementById('plat-name').value = '';
+    document.getElementById('plat-price').value = '';
+    document.getElementById('plat-category').value = '';
+    document.getElementById('plat-image').value = '';
+    document.getElementById('plat-acc').value = '';
+    currentEditingId = null;
+    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
 }
 
 // STATISTIQUES ET VENTES
