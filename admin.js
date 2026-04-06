@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeApp() {
     // Vérifier la connexion admin avec mot de passe
     document.getElementById('btn-login').addEventListener('click', () => {
-        const password = document.getElementById('login-password').value.trim();
+        const password = document.getElementById('login-password').value.trim().toLowerCase();
         const correctPassword = 'matersavoure'; // Change ce mot de passe !
         
         if (!password) {
@@ -32,13 +32,15 @@ function initializeApp() {
         
         if (password !== correctPassword) {
             showNotification('Mot de passe incorrect', 'error');
+            console.log('Mot de passe incorrect. Entré:', password, 'Attendu:', correctPassword);
             document.getElementById('login-password').value = '';
             return;
         }
         
         // Connexion réussie
-        console.log('Connexion réussie');
+        console.log('Connexion réussie - Masquage overlay');
         document.getElementById('login-overlay').style.display = 'none';
+        console.log('Appel de loadDashboard');
         loadDashboard();
     });
 
@@ -109,17 +111,22 @@ function setupEventListeners() {
 
 function setupSocketListeners() {
     socket.on('connect', () => {
-        console.log('Admin connecté au serveur');
+        console.log('Admin connecté au serveur Socket.io');
         updateConnectionStatus(true);
     });
 
     socket.on('disconnect', () => {
-        console.log('Admin déconnecté');
+        console.log('Admin déconnecté du serveur Socket.io');
+        updateConnectionStatus(false);
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Erreur de connexion Socket.io:', error);
         updateConnectionStatus(false);
     });
 
     socket.on('menu-updated', (data) => {
-        console.log('Menu mis à jour:', data);
+        console.log('Menu mis à jour via Socket.io:', data);
         menuData = data;
         renderMenuTable();
         // Notifier le client du changement
@@ -153,6 +160,7 @@ function createConnectionStatus() {
 }
 
 function showSection(sectionId) {
+    console.log('showSection appelé avec sectionId:', sectionId);
     currentSection = sectionId;
     document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
     document.getElementById(sectionId).style.display = 'block';
@@ -166,6 +174,7 @@ function showSection(sectionId) {
     // Charger les données de la section
     switch(sectionId) {
         case 'stocks':
+            console.log('Chargement de la section stocks - appel loadMenu');
             loadMenu();
             break;
         case 'ventes':
@@ -179,15 +188,19 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
+    console.log('loadDashboard appelé - Affichage section stocks');
     showSection('stocks');
 }
 
 // GESTION DU MENU
 async function loadMenu() {
+    console.log('loadMenu appelé - Chargement du menu depuis API');
     try {
         setLoading(true);
         const response = await fetch(`${API_URL}/api/menu`);
+        console.log('Réponse API reçue:', response.status);
         menuData = await response.json();
+        console.log('Données menu chargées:', menuData.length, 'éléments');
         renderMenuTable();
     } catch (error) {
         console.error('Erreur chargement menu:', error);
@@ -198,7 +211,12 @@ async function loadMenu() {
 }
 
 function renderMenuTable() {
+    console.log('renderMenuTable appelé avec', menuData.length, 'éléments');
     const tbody = document.getElementById('stock-list');
+    if (!tbody) {
+        console.error('Element stock-list non trouvé!');
+        return;
+    }
     tbody.innerHTML = menuData.map(item => {
         const itemId = normalizeId(item);
         return `
