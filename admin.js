@@ -20,32 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-    // Vérifier la connexion admin avec mot de passe
-    document.getElementById('btn-login').addEventListener('click', () => {
-        const password = document.getElementById('login-password').value.trim().toLowerCase();
-        const correctPassword = 'matersavoure'; // Change ce mot de passe !
-        
-        if (!password) {
-            showNotification('Veuillez entrer un mot de passe', 'error');
-            return;
-        }
-        
-        if (password !== correctPassword) {
-            showNotification('Mot de passe incorrect', 'error');
-            console.log('Mot de passe incorrect. Entré:', password, 'Attendu:', correctPassword);
-            document.getElementById('login-password').value = '';
-            return;
-        }
-        
-        // Connexion réussie
-        console.log('Connexion réussie - Masquage overlay');
-        document.getElementById('login-overlay').style.display = 'none';
-        console.log('Appel de loadDashboard');
-        loadDashboard();
-    });
+    // Connexion automatique sans mot de passe
+    console.log('Connexion automatique - Masquage overlay');
+    document.getElementById('login-overlay').style.display = 'none';
+    console.log('Appel de loadDashboard');
+    loadDashboard();
 
-    // NE PAS charger les données ici, attendre la connexion
-    console.log('App initialisée, en attente du mot de passe...');
+    console.log('App initialisée');
 }
 
 function normalizeId(item) {
@@ -91,30 +72,6 @@ function initializeApp() {
 function setupEventListeners() {
     // Ajouter les styles dynamiques
     addDynamicStyles();
-
-    // Bouton connexion admin
-    document.getElementById('btn-login').addEventListener('click', () => {
-        const password = document.getElementById('login-password').value.trim().toLowerCase();
-        const correctPassword = 'matersavoure'; // Change ce mot de passe !
-        
-        if (!password) {
-            showNotification('Veuillez entrer un mot de passe', 'error');
-            return;
-        }
-        
-        if (password !== correctPassword) {
-            showNotification('Mot de passe incorrect', 'error');
-            console.log('Mot de passe incorrect. Entré:', password, 'Attendu:', correctPassword);
-            document.getElementById('login-password').value = '';
-            return;
-        }
-        
-        // Connexion réussie
-        console.log('Connexion réussie - Masquage overlay');
-        document.getElementById('login-overlay').style.display = 'none';
-        console.log('Appel de loadDashboard');
-        loadDashboard();
-    });
 
     // Navigation
     document.querySelectorAll('.sidebar nav button').forEach(btn => {
@@ -223,9 +180,20 @@ async function loadMenu() {
     try {
         setLoading(true);
         const response = await fetch(`${API_URL}/api/menu`);
-        console.log('Réponse API reçue:', response.status);
-        menuData = await response.json();
-        console.log('Données menu chargées:', menuData.length, 'éléments');
+        console.log('Réponse API reçue:', response.status, response.statusText);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const rawData = await response.text();
+        console.log('Données brutes reçues:', rawData);
+
+        menuData = JSON.parse(rawData);
+        console.log('Données menu parsées:', menuData);
+        console.log('Type des données:', typeof menuData);
+        console.log('Nombre d\'éléments:', Array.isArray(menuData) ? menuData.length : 'N/A');
+
         renderMenuTable();
     } catch (error) {
         console.error('Erreur chargement menu:', error);
