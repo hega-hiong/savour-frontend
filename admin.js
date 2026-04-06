@@ -12,6 +12,29 @@ let currentEditingId = null;
 let currentSection = 'stocks';
 let isLoading = false;
 
+// Fonction de notification
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <span class="notification-icon">
+            ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+        </span>
+        <span class="notification-message">${message}</span>
+    `;
+
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+
+    // Supprimer automatiquement après 3 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
@@ -33,36 +56,6 @@ function syncMenuWithClients() {
     socket.emit('force-menu-update');
     showNotification('Synchronisation demandée aux clients', 'info');
 }
-
-/*// Interface Admin SaaS - Savour d'Afrique
-const socket = io(API_URL);
-let menuData = [];
-let ordersData = [];
-let currentEditingId = null;
-
-// États de l'interface
-let currentSection = 'stocks';
-let isLoading = false;
-
-// Initialisation
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    setupEventListeners();
-    setupSocketListeners();
-});
-
-function initializeApp() {
-    // Simuler connexion admin (pas de vraie authentification pour l'instant)
-    document.getElementById('btn-login').addEventListener('click', () => {
-        document.getElementById('login-overlay').style.display = 'none';
-        loadDashboard();
-    });
-
-    // Charger les données initiales
-    loadMenu();
-    loadOrders();
-    loadStats();
-}*/
 
 function setupEventListeners() {
     // Ajouter les styles dynamiques
@@ -349,20 +342,16 @@ async function handleMenuSubmit() {
             const result = await response.json();
             console.log('Plat ajouté avec succès:', result);
             
-            // Vérifier que l'item a toutes les propriétés requises
-            if (!result.nom || !result.prix || !result.categorie) {
-                console.error('Item sauvegardé incomplet:', result);
-                showNotification('Erreur: données incomplètes sauvegardées', 'error');
-                return;
-            }
+            // Recharger le menu pour obtenir les données complètes
+            console.log('Rechargement du menu après ajout');
+            await loadMenu();
             
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
-            // Forcer le rechargement du menu
-            console.log('Rechargement forcé du menu après ajout');
-            await loadMenu();
+            
             // Émettre un événement pour forcer la mise à jour des clients
             socket.emit('force-menu-update');
+            
             // Fallback : recharger aussi après un délai
             setTimeout(async () => {
                 console.log('Rechargement de secours du menu');
