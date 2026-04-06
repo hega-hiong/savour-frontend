@@ -202,13 +202,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('modal-overlay').style.display = 'none');
     document.getElementById('btn-confirm').addEventListener('click', envoyerCommande);
 });
-        if (count > 0) cartBar.classList.add('active'); else cartBar.classList.remove('active');
-    }
-
-    const details = panier.map(item => `${item.quantite}x ${item.nom}`).join('\n');
-    const modalDetails = document.getElementById('modal-details');
-    if (modalDetails) modalDetails.innerText = `Table ${tableNum} • Total: ${total.toFixed(2)} €\n${details}`;
-}
 
 function ajouterAuPanier(plat) {
     const existant = panier.find(item => item.id === plat.id);
