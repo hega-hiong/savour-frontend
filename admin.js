@@ -251,8 +251,80 @@ function renderMenuTable() {
 
 // -----------------------------
 // FORMULAIRE MENU (AJOUT / UPDATE)
+
+// -----------------------------
+// FORMULAIRE MENU (AJOUT / UPDATE)
 // -----------------------------
 async function handleMenuSubmit() {
+    const nom = document.getElementById('plat-name').value.trim();
+    const prix = parseFloat(document.getElementById('plat-price').value);
+    const categorie = document.getElementById('plat-category').value.trim();
+    const image = document.getElementById('plat-image').value.trim();
+    const accRaw = document.getElementById('plat-acc').value.trim();
+
+    const accompagnements = accRaw
+        ? accRaw.split(',').map(a => a.trim())
+        : [];
+
+    if (!nom || !prix || !categorie || !image) {
+        showNotification('Tous les champs sont requis', 'error');
+        return;
+    }
+
+    const payload = {
+        nom,
+        prix,
+        categorie,
+        image,
+        accompagnements
+    };
+
+    try {
+        setLoading(true);
+
+        let response;
+
+        if (currentEditingId) {
+            // Mise à jour
+            response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // Ajout
+            response = await fetch(`${API_URL}/api/menu`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            console.error(await response.text());
+            throw new Error("Erreur API");
+        }
+
+        showNotification(
+            currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !',
+            'success'
+        );
+
+        clearMenuForm();
+        loadMenu();
+
+    } catch (error) {
+        console.error('Erreur sauvegarde:', error);
+        showNotification('Erreur lors de la sauvegarde', 'error');
+    } finally {
+        setLoading(false);
+    }
+}
+
+
+
+// -----------------------------
+/*async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
     const categorie = document.getElementById('plat-category').value.trim();
@@ -307,7 +379,7 @@ async function handleMenuSubmit() {
     } finally {
         setLoading(false);
     }
-}
+}*/
 
 // -----------------------------
 // EDIT MENU ITEM
