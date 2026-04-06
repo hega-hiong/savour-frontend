@@ -202,102 +202,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('modal-overlay').style.display = 'none');
     document.getElementById('btn-confirm').addEventListener('click', envoyerCommande);
 });
-
-
-
-
-/*// Interface Client - Savour d'Afrique
-const socket = io();
-
-// 1. NOTRE BASE DE DONNÉES DE PLATS
-let menuData = [
-    { id: 1, nom: "Poulet Yassa", prix: 14.50, categorie: "Plats", image: "images/yassa.png", accompagnements: ["Riz Blanc", "Frites"] },
-    { id: 2, nom: "Mafé Boeuf", prix: 15.00, categorie: "Plats", image: "images/mafe.JPG", accompagnements: ["Riz Blanc", "Riz Rouge", "Alloco"] },
-    { id: 3, nom: "Jus de Bissap", prix: 4.00, categorie: "Boissons", image: "images/bissap.JPG" },
-    { id: 4, nom: "Thiébou Djeun", prix: 16.00, categorie: "Plats", image: "images/yassa.png", accompagnements: ["Riz Blanc"] },
-    { id: 5, nom: "Jus de Gingembre", prix: 3.50, categorie: "Boissons", image: "images/bissap.JPG" },
-    { id: 6, nom: "Tiramisu Africain", prix: 6.00, categorie: "Desserts", image: "images/yassa.png" }
-];
-
-let tableNum = "Inconnue";
-let panier = [];
-
-// Initialisation Socket.io
-socket.on('connect', () => {
-    console.log('Client connecté au serveur');
-});
-
-socket.on('disconnect', () => {
-    console.log('Client déconnecté du serveur');
-});
-
-// Synchronisation temps réel du menu
-socket.on('menu-updated', (updatedMenu) => {
-    console.log('Menu mis à jour en temps réel:', updatedMenu);
-    menuData = updatedMenu;
-    genererMenu(); // Régénérer l'affichage du menu
-    showNotification('Le menu a été mis à jour !', 'info');
-});
-
-// Forcer la mise à jour du menu depuis l'admin
-socket.on('force-menu-update', () => {
-    console.log('Mise à jour forcée du menu demandée par l\'admin');
-    loadMenuFromAPI().then(() => {
-        genererMenu();
-        showNotification('Menu mis à jour !', 'info');
-    });
-});
-
-// Rechargement périodique du menu toutes les 30 secondes pour s'assurer de la synchronisation
-setInterval(() => {
-    console.log('Rechargement périodique du menu');
-    loadMenuFromAPI().then(() => {
-        genererMenu();
-    });
-}, 30000);
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// Charger le menu depuis l'API
-async function loadMenuFromAPI() {
-    try {
-        console.log('Chargement du menu depuis l\'API...');
-        const response = await fetch(`${API_URL}/api/menu`);
-        if (response.ok) {
-            const apiMenu = await response.json();
-            console.log('Menu chargé depuis API:', apiMenu);
-            // Utiliser les données de l'API si disponibles
-            if (apiMenu && apiMenu.length > 0) {
-                menuData = apiMenu;
-                console.log('Menu mis à jour avec les données API');
-            }
-        } else {
-            console.warn('Impossible de charger le menu depuis l\'API, utilisation des données locales');
-        }
-    } catch (error) {
-        console.error('Erreur chargement menu API:', error);
-        console.warn('Utilisation des données locales');
-    }
-}
-
-function updatePanierUI() {
-    const total = panier.reduce((acc, item) => acc + item.prix * item.quantite, 0);
-    const count = panier.reduce((acc, item) => acc + item.quantite, 0);
-    const cartText = document.getElementById('cart-text');
-    if (cartText) cartText.innerText = `${count} article${count > 1 ? 's' : ''} - ${total.toFixed(2)} €`;
-    document.getElementById('table-display').innerText = `Table ${tableNum}`;
-
-    const cartBar = document.getElementById('cart-bar');
-    if (cartBar) {
         if (count > 0) cartBar.classList.add('active'); else cartBar.classList.remove('active');
     }
 
@@ -334,7 +238,7 @@ async function envoyerCommande() {
     };
 
     try {
-        const res = await fetch('/api/orders', {
+        const res = await fetch(`${API_URL}/api/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -389,27 +293,6 @@ function setupFiltres() {
         });
     });
 }
-
-document.addEventListener('DOMContentLoaded', async () => {
-    const params = new URLSearchParams(window.location.search);
-    tableNum = params.get('table') || 'Inconnue';
-    updatePanierUI();
-
-    // Charger le menu depuis l'API avant d'afficher
-    await loadMenuFromAPI();
-    genererMenu();
-    setupFiltres();
-
-    document.getElementById('btn-checkout').addEventListener('click', () => {
-        if (panier.length === 0) {
-            alert('Panier vide. Ajoutez un plat avant de commander.');
-            return;
-        }
-        document.getElementById('modal-overlay').style.display = 'flex';
-    });
-    document.getElementById('btn-cancel').addEventListener('click', () => document.getElementById('modal-overlay').style.display = 'none');
-    document.getElementById('btn-confirm').addEventListener('click', envoyerCommande);
-});*/
 
 
 
