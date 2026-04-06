@@ -20,16 +20,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeApp() {
-    // Simuler connexion admin
+    // Vérifier la connexion admin avec mot de passe
     document.getElementById('btn-login').addEventListener('click', () => {
+        const password = document.getElementById('login-password').value.trim();
+        const correctPassword = 'matersavoure'; // Change ce mot de passe !
+        
+        if (!password) {
+            showNotification('Veuillez entrer un mot de passe', 'error');
+            return;
+        }
+        
+        if (password !== correctPassword) {
+            showNotification('Mot de passe incorrect', 'error');
+            document.getElementById('login-password').value = '';
+            return;
+        }
+        
+        // Connexion réussie
+        console.log('Connexion réussie');
         document.getElementById('login-overlay').style.display = 'none';
         loadDashboard();
     });
 
-    // Charger les données initiales
-    loadMenu();
-    loadOrders();
-    loadStats();
+    // NE PAS charger les données ici, attendre la connexion
+    console.log('App initialisée, en attente du mot de passe...');
 }
 
 function normalizeId(item) {
@@ -256,40 +270,39 @@ async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
     const categorie = document.getElementById('plat-category').value.trim();
-    const image = document.getElementById('plat-image').value.trim();
+    const imageFile = document.getElementById('plat-image').files[0];
     const accompagnements = document.getElementById('plat-acc').value.trim()
         ? document.getElementById('plat-acc').value.split(',').map(a => a.trim())
         : null;
 
-    if (!nom || !prix || !categorie || !image) {
-        showNotification('Tous les champs sont requis', 'error');
+    if (!nom || !prix || !categorie || (!imageFile && !currentEditingId)) {
+        showNotification('Tous les champs sont requis (image obligatoire pour ajout)', 'error');
         return;
     }
 
     try {
         setLoading(true);
-        const formData = {
-            nom,
-            prix,
-            categorie,
-            image,
-            accompagnements
-        };
+        const formData = new FormData();
+        formData.append('nom', nom);
+        formData.append('prix', prix);
+        formData.append('categorie', categorie);
+        if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
+        if (imageFile) formData.append('image', imageFile);
+        // Pour update sans nouvelle image, le backend garde l'ancienne
 
         let response;
         if (currentEditingId) {
             // Mise à jour
+            formData.append('id', currentEditingId);
             response = await fetch(`${API_URL}/api/menu/${currentEditingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formData
             });
         } else {
             // Ajout
             response = await fetch(`${API_URL}/api/menu`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: formData
             });
         }
 
