@@ -19,16 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSocketListeners();
 });
 
-function initializeApp() {
-    // Connexion automatique sans mot de passe
-    console.log('Connexion automatique - Masquage overlay');
-    document.getElementById('login-overlay').style.display = 'none';
-    console.log('Appel de loadDashboard');
-    loadDashboard();
-
-    console.log('App initialisée');
-}
-
 function normalizeId(item) {
     return item.id || item._id;
 }
@@ -867,46 +857,6 @@ function addDynamicStyles() {
         color: #166534;
     }
 
-    .connection-status.disconnected {
-        background: #fef2f2;
-        color: #991b1b;
-    }
-`;
-    document.head.appendChild(style);
-}
-
-// Styles CSS dynamiques pour les notifications
-const style = document.createElement('style');
-style.textContent = `
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 1000;
-        animation: slideIn 0.3s ease-out;
-    }
-    .notification-success { background: #10b981; }
-    .notification-error { background: #ef4444; }
-    .notification-info { background: #3b82f6; }
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    .connection-status {
-        padding: 8px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        margin-top: 20px;
-    }
-    .connection-status.connected {
-        background: #dcfce7;
-        color: #166534;
-    }
     .connection-status.disconnected {
         background: #fef2f2;
         color: #991b1b;
