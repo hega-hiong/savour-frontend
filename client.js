@@ -19,31 +19,26 @@ let panier = [];
 
 // Initialisation Socket.io
 socket.on('connect', () => {
-    console.log('Client connecté au backend Render');
+    console.log('Client connecté au serveur');
 });
 
 socket.on('disconnect', () => {
-    console.log('Client déconnecté du backend');
+    console.log('Client déconnecté du serveur');
 });
 
 // Synchronisation temps réel du menu
 socket.on('menu-updated', (updatedMenu) => {
     console.log('Menu mis à jour en temps réel:', updatedMenu);
     menuData = updatedMenu;
-    genererMenu();
+    genererMenu(); // Régénérer l'affichage du menu
     showNotification('Le menu a été mis à jour !', 'info');
 });
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+// Forcer la mise à jour du menu depuis l'admin
+socket.on('force-menu-update', () => {
+    console.log('Mise à jour forcée du menu demandée par l\'admin');
+    loadMenuFromAPI();
+});
 
 // Charger le menu depuis l'API
 async function loadMenuFromAPI() {
@@ -244,6 +239,12 @@ socket.on('menu-updated', (updatedMenu) => {
     showNotification('Le menu a été mis à jour !', 'info');
 });
 
+// Forcer la mise à jour du menu depuis l'admin
+socket.on('force-menu-update', () => {
+    console.log('Mise à jour forcée du menu demandée par l\'admin');
+    loadMenuFromAPI();
+});
+
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -258,10 +259,16 @@ function showNotification(message, type = 'info') {
 // Charger le menu depuis l'API
 async function loadMenuFromAPI() {
     try {
-        const response = await fetch('/api/menu');
+        console.log('Chargement du menu depuis l\'API...');
+        const response = await fetch(`${API_URL}/api/menu`);
         if (response.ok) {
-            menuData = await response.json();
-            console.log('Menu chargé depuis API:', menuData);
+            const apiMenu = await response.json();
+            console.log('Menu chargé depuis API:', apiMenu);
+            // Utiliser les données de l'API si disponibles
+            if (apiMenu && apiMenu.length > 0) {
+                menuData = apiMenu;
+                console.log('Menu mis à jour avec les données API');
+            }
         } else {
             console.warn('Impossible de charger le menu depuis l\'API, utilisation des données locales');
         }
@@ -522,43 +529,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-// ...existing code...
-
-function normalizeId(item) {
-    return item.id || item._id;
-}
-
-function clearMenuForm() {
-    document.getElementById('plat-name').value = '';
-    document.getElementById('plat-price').value = '';
-    document.getElementById('plat-category').value = '';
-    document.getElementById('plat-image').value = '';
-    document.getElementById('plat-acc').value = '';
-    currentEditingId = null;
-    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
-}
-
-// ...existing code...
-
-function editMenuItem(id) {
-    const item = menuData.find(i => normalizeId(i) === id);
-    // ...
-}
-
-async function deleteMenuItem(id) {
-    // ...
-    const itemId = id; // ou normalizeId si tu appelles avec item
-    const response = await fetch(`${API_URL}/api/menu/${itemId}`, { method: 'DELETE' });
-    // ...
-}
-
-function renderMenuTable() {
-    tbody.innerHTML = menuData.map(item => {
-        const itemId = normalizeId(item);
-        return `
-            ... onclick="editMenuItem('${itemId}')" ...
-            ... href / delete ... 
-        `;
-    }).join('');
-}

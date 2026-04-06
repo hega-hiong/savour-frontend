@@ -52,13 +52,10 @@ function normalizeId(item) {
     return item.id || item._id;
 }
 
-function clearMenuForm() {
-    document.getElementById('plat-name').value = '';
-    document.getElementById('plat-price').value = '';
-    document.getElementById('plat-image').value = '';
-    document.getElementById('plat-acc').value = '';
-    currentEditingId = null;
-    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
+function syncMenuWithClients() {
+    console.log('Synchronisation forcée du menu avec les clients');
+    socket.emit('force-menu-update');
+    showNotification('Synchronisation demandée aux clients', 'info');
 }
 
 /*// Interface Admin SaaS - Savour d'Afrique
@@ -316,7 +313,11 @@ async function handleMenuSubmit() {
         if (response.ok) {
             showNotification(currentEditingId ? 'Plat mis à jour !' : 'Plat ajouté !', 'success');
             clearMenuForm();
+            // Forcer le rechargement du menu
+            console.log('Rechargement forcé du menu après ajout');
             loadMenu();
+            // Émettre un événement pour forcer la mise à jour des clients
+            socket.emit('force-menu-update');
         } else {
             console.error('Error response:', response.status, await response.text());
             throw new Error('Erreur API');
