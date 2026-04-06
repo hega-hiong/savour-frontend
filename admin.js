@@ -274,6 +274,23 @@ function renderMenuTable() {
 // -----------------------------
 // FORMULAIRE MENU (AJOUT / UPDATE)
 // -----------------------------
+function clearMenuForm() {
+    const nameField = document.getElementById('plat-name');
+    const priceField = document.getElementById('plat-price');
+    const categoryField = document.getElementById('plat-category');
+    const imageField = document.getElementById('plat-image');
+    const accField = document.getElementById('plat-acc');
+    const buttonField = document.getElementById('add-menu-item');
+
+    if (nameField) nameField.value = '';
+    if (priceField) priceField.value = '';
+    if (categoryField) categoryField.selectedIndex = 0;
+    if (imageField) imageField.value = '';
+    if (accField) accField.value = '';
+    currentEditingId = null;
+    if (buttonField) buttonField.textContent = 'Ajouter / Mettre à jour';
+}
+
 async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
@@ -572,16 +589,6 @@ async function toggleAvailability(id) {
         console.error('Erreur toggle disponibilité:', error);
         showNotification('Erreur lors de la mise à jour', 'error');
     }
-}
-
-function clearMenuForm() {
-    document.getElementById('plat-name').value = '';
-    document.getElementById('plat-price').value = '';
-    document.getElementById('plat-category').value = '';
-    document.getElementById('plat-image').value = '';
-    document.getElementById('plat-acc').value = '';
-    currentEditingId = null;
-    document.getElementById('add-menu-item').textContent = 'Ajouter / Mettre à jour';
 }
 
 // STATISTIQUES ET VENTES
