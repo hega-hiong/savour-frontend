@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSocketListeners();
 });
 
+function initializeApp() {
+    console.log('Initialisation de l\'application admin');
+    loadDashboard();
+}
+
 function normalizeId(item) {
     return item.id || item._id;
 }
