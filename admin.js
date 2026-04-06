@@ -294,6 +294,24 @@ function clearMenuForm() {
     if (buttonField) buttonField.textContent = 'Ajouter / Mettre à jour';
 }
 
+function exportReport() {
+    // Export CSV simple
+    const csv = [
+        ['Table', 'Montant', 'Statut', 'Date'],
+        ...ordersData.map(o => [o.table, o.subtotal, o.status, new Date(o.timestamp).toLocaleString('fr-FR')])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rapport-ventes-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotification('Rapport exporté !', 'success');
+}
+
 async function handleMenuSubmit() {
     const nom = document.getElementById('plat-name').value.trim();
     const prix = parseFloat(document.getElementById('plat-price').value);
@@ -316,6 +334,8 @@ async function handleMenuSubmit() {
         formData.append('categorie', categorie);
         if (accompagnements) formData.append('accompagnements', JSON.stringify(accompagnements));
         formData.append('image', imageFile);
+
+        console.log('Données à envoyer:', { nom, prix, categorie, accompagnements, imageFile: imageFile.name });
 
         let response;
         if (currentEditingId) {
@@ -729,24 +749,6 @@ async function deleteOrder(orderId) {
         showNotification('Erreur suppression', 'error');
     }
 }
-
-function exportReport() {
-    // Export CSV simple
-    const csv = [
-        ['Table', 'Montant', 'Statut', 'Date'],
-        ...ordersData.map(o => [o.table, o.subtotal, o.status, new Date(o.timestamp).toLocaleString('fr-FR')])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rapport-ventes-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    showNotification('Rapport exporté !', 'success');
-}*/
 
 
 
