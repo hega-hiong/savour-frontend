@@ -359,9 +359,6 @@ async function handleMenuSubmit() {
             console.error('Erreur serveur:', response.status, errorText);
             showNotification(`Erreur lors de la sauvegarde: ${errorText}`, 'error');
         }
-            console.error('Error response:', response.status, await response.text());
-            throw new Error('Erreur API');
-        }
     } catch (error) {
         console.error('Erreur sauvegarde:', error);
         showNotification('Erreur lors de la sauvegarde', 'error');
