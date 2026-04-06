@@ -1,5 +1,5 @@
 // URL de ton backend Render
-const API_URL = "https://savour-backend-uhk1.onrender.com";
+const API_URL = "https://savour-backend-1.onrender.com";
 
 // Connexion Socket.io vers Render
 const socket = io(API_URL);
