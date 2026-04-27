@@ -1,7 +1,7 @@
-// URL de ton backend Render
+// URL de ton backend distant
 const API_URL = "https://savour-backend-1.onrender.com";
 
-// Connexion Socket.io vers Render
+// Connexion Socket.io vers le backend distant
 const socket = io(API_URL);
 
 let orders = [];

@@ -1,7 +1,7 @@
-// URL de ton backend local
-const API_URL = "http://localhost:3000";
+// URL de ton backend distant
+const API_URL = "https://savour-backend-1.onrender.com";
 
-// Connexion Socket.io vers Render
+// Connexion Socket.io vers le backend distant
 const socket = io(API_URL);
 
 // 1. NOTRE BASE DE DONNÉES DE PLATS
